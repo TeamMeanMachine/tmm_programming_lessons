@@ -14,5 +14,21 @@
     "properties": {
       "persistent": true
     }
+  },
+  {
+    "name": "/Drive/Demo Bounding Box",
+    "type": "boolean",
+    "value": false,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/SmartDashboard/DemoSpeed",
+    "type": "double",
+    "value": 1.0,
+    "properties": {
+      "persistent": true
+    }
   }
 ]

@@ -7,6 +7,7 @@ import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.round
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.motion.following.driveAlongPath
+import org.team2471.frc.lib.motion.following.pose
 import org.team2471.frc.lib.motion_profiling.Path2D
 import org.team2471.frc.lib.units.*
 import org.team2471.tmm_programming_lessons.*
@@ -16,8 +17,8 @@ import kotlin.math.absoluteValue
 suspend fun pathFollowTest() = use(Drive) {
     Drive.heading = -180.0.degrees
     val newPath = Path2D("Path Follow Test")
-    println("position: ${Drive.position}, ${Drive.combinedPosition}")
-    val p1currentPose = PoseEstimator.currentPose
+    println("position: ${Drive.position}, ${Drive.position}")
+    val p1currentPose = Drive.position
 
     newPath.addVector2(p1currentPose)
     newPath.addVector2(Vector2(p1currentPose.x, p1currentPose.y - 10.0))

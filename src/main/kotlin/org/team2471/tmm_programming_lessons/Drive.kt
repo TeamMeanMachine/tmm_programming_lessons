@@ -16,14 +16,12 @@ import org.team2471.frc.lib.coroutines.*
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.input.Controller
-import org.team2471.frc.lib.math.Vector2
-import org.team2471.frc.lib.math.linearMap
-import org.team2471.frc.lib.math.round
+import org.team2471.frc.lib.math.*
 import org.team2471.frc.lib.motion.following.*
 import org.team2471.frc.lib.motion_profiling.MotionCurve
 import org.team2471.frc.lib.motion_profiling.following.SwerveParameters
 import org.team2471.frc.lib.units.*
-import org.team2471.frc2024.NavxWrapper
+import org.team2471.frc2024.gyro.Gyro
 import kotlin.math.absoluteValue
 import kotlin.math.min
 
@@ -98,36 +96,36 @@ object Drive : Subsystem("Drive"), SwerveDrive {
      * **/
     override val modules: Array<SwerveDrive.Module> = arrayOf(
         Module(
-            MotorController(FalconID(Falcons.LEFT_FRONT_DRIVE)),
-            MotorController(FalconID(Falcons.LEFT_FRONT_STEER)),
-            Vector2(-9.75, 9.75),
+            MotorController(FalconID(Falcons.LEFT_FRONT_DRIVE, "Drive/LFD")),
+            MotorController(FalconID(Falcons.LEFT_FRONT_STEER, "Drive/LFS")),
+            Vector2(-9.75, 9.75).inches,
             Preferences.getDouble("Angle Offset 0",-120.76).degrees,
             CANCoders.CANCODER_FRONTLEFT,
             odometer0Entry,
             0
         ),
         Module(
-            MotorController(FalconID(Falcons.RIGHT_FRONT_DRIVE)),
-            MotorController(FalconID(Falcons.RIGHT_FRONT_STEER)),
-            Vector2(9.75, 9.75),
+            MotorController(FalconID(Falcons.RIGHT_FRONT_DRIVE, "Drive/RFD")),
+            MotorController(FalconID(Falcons.RIGHT_FRONT_STEER, "Drive/RFS")),
+            Vector2(9.75, 9.75).inches,
             Preferences.getDouble("Angle Offset 1",-290.3).degrees,
             CANCoders.CANCODER_FRONTRIGHT,
             odometer1Entry,
             1
         ),
         Module(
-            MotorController(FalconID(Falcons.RIGHT_REAR_DRIVE)),
-            MotorController(FalconID(Falcons.RIGHT_REAR_STEER)),
-            Vector2(9.75, -9.75),
+            MotorController(FalconID(Falcons.RIGHT_REAR_DRIVE, "Drive/RBD")),
+            MotorController(FalconID(Falcons.RIGHT_REAR_STEER, "Drive/RBS")),
+            Vector2(9.75, -9.75).inches,
             Preferences.getDouble("Angle Offset 2",-159.25).degrees,
             CANCoders.CANCODER_REARRIGHT,
             odometer2Entry,
             2
         ),
         Module(
-            MotorController(FalconID(Falcons.LEFT_REAR_DRIVE)),
-            MotorController(FalconID(Falcons.LEFT_REAR_STEER)),
-            Vector2(-9.75, -9.75),
+            MotorController(FalconID(Falcons.LEFT_REAR_DRIVE, "Drive/LBD")),
+            MotorController(FalconID(Falcons.LEFT_REAR_STEER, "Drive/LBS")),
+            Vector2(-9.75, -9.75).inches,
             Preferences.getDouble("Angle Offset 3",-126.38).degrees,
             CANCoders.CANCODER_REARLEFT,
             odometer3Entry,
@@ -135,25 +133,24 @@ object Drive : Subsystem("Drive"), SwerveDrive {
         )
     )
 
-    private var navX: NavxWrapper = NavxWrapper()
-    val gyro = navX
+    val gyro = Gyro
     private var gyroOffset = 0.0.degrees
 
     override var heading: Angle
-        get() = (gyroOffset + gyro.angle.degrees).wrap()
+        get() = (gyroOffset + gyro.angle).wrap()
         set(value) {
-            gyro.reset()
-            gyroOffset = -gyro.angle.degrees + value
+//            gyro.reset()
+            gyroOffset = -gyro.angle + value
         }
 
     override val headingRate: AngularVelocity
         get() = -gyro.rate.degrees.perSecond
 
     override var velocity = Vector2(0.0, 0.0)
+    override var acceleration: Vector2 = Vector2(0.0, 0.0)
+    override var deltaPos: Vector2L = Vector2(0.0, 0.0).inches
     override var position = Vector2(0.0, 0.0)
-    override val combinedPosition: Vector2
-        get() = PoseEstimator.currentPose
-    override var robotPivot = Vector2(0.0, 0.0)
+    override var robotPivot = Vector2(0.0, 0.0).inches
     override var headingSetpoint = 0.0.degrees
 
     var autoAim: Boolean = false
@@ -180,6 +177,9 @@ object Drive : Subsystem("Drive"), SwerveDrive {
     override val kTread = 0.0 //.04 // how much of an effect treadWear has on distance (fully worn tread goes 4% less than full tread)  0.0 for no effect
     override val plannedPath: NetworkTableEntry = plannedPathEntry
     override val actualRoute: NetworkTableEntry = actualRouteEntry
+    override var lastResetTime: Double = 0.0
+    override val gyroConnected: Boolean
+        get() = gyro.isConnected
 
     val autoPDController = PDConstantFController(0.015, 0.04, 0.05)
     val teleopPDController =  PDConstantFController(0.012, 0.09, 0.05)
@@ -308,12 +308,8 @@ object Drive : Subsystem("Drive"), SwerveDrive {
         plannedPath.setString("")
     }
 
-    override fun poseUpdate(poseTwist: SwerveDrive.Pose) {
-        //MAPoseEstimator.addDriveData(Timer.getFPGATimestamp(), Twist2d(poseTwist.position.y, poseTwist.position.x, -poseTwist.heading.asRadians))
-    }
-
     override fun resetOdom() {
-        PoseEstimator.zeroOffset()
+//        PoseEstimator.zeroOffset()
        // MAPoseEstimator.resetPose(FieldManager.convertTMMtoWPI(pose.position.x.feet, pose.position.y.feet, pose.heading))
     }
 
@@ -449,7 +445,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
     class Module(
         val driveMotor: MotorController,
         val turnMotor: MotorController,
-        override val modulePosition: Vector2,
+        override val modulePosition: Vector2L,
         override var angleOffset: Angle,
         canCoderID: Int,
         private val odometerEntry: NetworkTableEntry,
@@ -483,6 +479,8 @@ object Drive : Subsystem("Drive"), SwerveDrive {
 
         override val speed: Double
             get() = driveMotor.velocity
+        override val acceleration: Double
+            get() = driveMotor.acceleration
 
         val power: Double
             get() {
@@ -497,6 +495,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
         override var odometer: Double
             get() = odometerEntry.getDouble(0.0)
             set(value) { odometerEntry.setDouble(value) }
+        override var prevAngle: Angle = angle
 
         override fun zeroEncoder() {
             driveMotor.position = 0.0
@@ -521,7 +520,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
                 coastMode()
                 setRawOffsetConfig(absoluteAngle.asDegrees)
                 pid {
-                    p(0.02)
+                    p(0.02 * 1024.0)
 //                    d(0.0000025)
                 }
             }
@@ -564,7 +563,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
         //position = Vector2(-11.5, if (FieldManager.isBlueAlliance) 21.25 else -21.25)
         position = Vector2(0.0,0.0)
         zeroGyro()
-        PoseEstimator.zeroOffset()
+//        PoseEstimator.zeroOffset()
     }
 }
 

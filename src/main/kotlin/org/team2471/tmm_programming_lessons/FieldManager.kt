@@ -66,16 +66,6 @@ object FieldManager {
         }
     val insideStartingPosition = Vector2(3.0, scoringNodeYPosition)
     val outsideStartingPosition = Vector2(-11.5, scoringNodeYPosition)
-    val middleStartingPosition : Vector2
-        get() {
-            val d1 = (Drive.combinedPosition.x - -28.0.inches.asFeet).absoluteValue
-            val d2 = (Drive.combinedPosition.x - -76.0.inches.asFeet).absoluteValue
-            if(d1 < d2) {
-                return Vector2(-28.0.inches.asFeet, reflectFieldByAlliance(3.0))    //auto line
-            } else {
-                return Vector2(-76.0.inches.asFeet, reflectFieldByAlliance(3.0))
-            }
-        }
 
     val closeDoubleSubstationOffsetX = 67.64.inches
     val farDoubleSubstationOffsetX = 149.inches

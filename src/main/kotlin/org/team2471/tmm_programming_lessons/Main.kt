@@ -6,9 +6,16 @@ import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kotlinx.coroutines.DelicateCoroutinesApi
-import org.team2471.frc.lib.framework.MeanlibRobot
+import org.littletonrobotics.junction.LogFileUtil
+import org.littletonrobotics.junction.Logger
+import org.littletonrobotics.junction.networktables.NT4Publisher
+import org.littletonrobotics.junction.wpilog.WPILOGReader
+import org.littletonrobotics.junction.wpilog.WPILOGWriter
+import org.team2471.frc.lib.framework.LoggedMeanlibRobot
 import org.team2471.frc.lib.motion.following.demoMode
 import org.team2471.frc.lib.units.degrees
+import org.team2471.frc.lib.util.RobotMode
+import org.team2471.frc.lib.util.robotMode
 import org.team2471.tmm_programming_lessons.testing.*
 import java.net.NetworkInterface
 
@@ -16,7 +23,7 @@ import java.net.NetworkInterface
 
 
 @DelicateCoroutinesApi
-object Robot : MeanlibRobot() {
+object Robot : LoggedMeanlibRobot() {
     var startMeasureTime = System.nanoTime()
     var lastMeasureTime = startMeasureTime
     var isCompBot = true
@@ -25,7 +32,7 @@ object Robot : MeanlibRobot() {
         println("retrieving network interfaces")
         for (iFace in networkInterfaces) {
             println("${iFace.name}")
-            if (iFace.name == "eth0") {
+            if (iFace.name == "eth0" && !isSimulation()) {
                 println("NETWORK NAME--->${iFace.name}<----")
                 var macString = ""
                 for (byteVal in iFace.hardwareAddress){
@@ -37,6 +44,19 @@ object Robot : MeanlibRobot() {
                 println("I am compbot = $isCompBot")
             }
         }
+
+        if (robotMode != RobotMode.REPLAY) {
+            //sim or real
+//            Logger.addDataReceiver(WPILOGWriter())
+            Logger.addDataReceiver(NT4Publisher())
+        } else {
+            setUseTiming(true) // false = run sim as fast as possible
+            val logPath = LogFileUtil.findReplayLog()
+            Logger.setReplaySource(WPILOGReader(logPath))
+            Logger.addDataReceiver(WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")))
+        }
+
+        Logger.start()
 
         // i heard the first string + double concatenations were expensive...
         repeat(25) {
@@ -52,8 +72,8 @@ object Robot : MeanlibRobot() {
         Drive.zeroGyro()
         Drive.heading = 0.0.degrees
 
-        PoseEstimator
-        println("Activating PoseEstimator! currentPose ${PoseEstimator.currentPose}")
+//        PoseEstimator
+//        println("Activating PoseEstimator! currentPose ${PoseEstimator.currentPose}")
 
     }
 
@@ -88,9 +108,9 @@ object Robot : MeanlibRobot() {
         println("test mode begin. Hi.")
 //        Intake.pidTestOne()
 //        pathFollowTest()
-//        Drive.setAngleOffsets()
+        Drive.setAngleOffsets()
 //        useTest()
-        Drive.steeringTests()
+//        Drive.steeringTests()
         println("finished testing")
     }
 
