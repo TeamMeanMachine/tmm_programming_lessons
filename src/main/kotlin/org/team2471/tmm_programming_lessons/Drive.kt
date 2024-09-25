@@ -143,8 +143,8 @@ object Drive : Subsystem("Drive"), SwerveDrive {
             gyroOffset = -gyro.angle + value
         }
 
-    override val headingRate: AngularVelocity
-        get() = -gyro.rate.degrees.perSecond
+    override var headingRate: AngularVelocity = -gyro.rate.degrees.perSecond
+        get() = if (gyroConnected) gyro.rate.degrees.perSecond else field
 
     override var velocity = Vector2(0.0, 0.0)
     override var acceleration: Vector2 = Vector2(0.0, 0.0)
