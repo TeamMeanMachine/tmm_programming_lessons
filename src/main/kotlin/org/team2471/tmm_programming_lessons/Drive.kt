@@ -137,13 +137,13 @@ object Drive : Subsystem("Drive"), SwerveDrive {
     private var gyroOffset = 0.0.degrees
 
     override var heading: Angle
-        get() = (gyroOffset + gyro.angle).wrap()
+        get() = (gyroOffset + -gyro.angle).wrap()
         set(value) {
 //            gyro.reset()
             gyroOffset = -gyro.angle + value
         }
 
-    override var headingRate: AngularVelocity = -gyro.rate.degrees.perSecond
+    override var headingRate: AngularVelocity = gyro.rate.degrees.perSecond
         get() = if (gyroConnected) gyro.rate.degrees.perSecond else field
 
     override var velocity = Vector2(0.0, 0.0)
@@ -217,6 +217,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
 //            odometer3Entry.setPersistent()
             println("in drive global scope")
             val headingEntry = table.getEntry("Heading")
+            val headingSetpointEntry = table.getEntry("Heading Setpoint")
             val xEntry = table.getEntry("X")
             val yEntry = table.getEntry("Y")
             val poseEntry = table.getEntry("advantageScopePose")
@@ -260,6 +261,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
                 xEntry.setDouble(x)
                 yEntry.setDouble(y)
                 headingEntry.setDouble(heading.asDegrees)
+                headingSetpointEntry.setDouble(headingSetpoint.asDegrees)
                 val poseWPI = FieldManager.convertTMMtoWPI(x.feet, y.feet, heading)
                 poseEntry.setDoubleArray(doubleArrayOf(poseWPI.x, poseWPI.y, poseWPI.rotation.degrees))
 
