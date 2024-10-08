@@ -64,6 +64,7 @@ object Robot : LoggedMeanlibRobot() {
         }
         println("NEVER GONNA GIVE YOU UP")
 
+        OpenLoopSubsystem
         FieldManager
         OI
         println("Field Manager Active! Is Red ${FieldManager.isRedAlliance}")

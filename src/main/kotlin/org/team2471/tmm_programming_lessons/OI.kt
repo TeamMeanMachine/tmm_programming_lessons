@@ -65,12 +65,19 @@ object OI : Subsystem("OI") {
         }
         driverController::start.whenTrue { Drive.calibrateRobotPosition() }
         driverController::x.whenTrue { Drive.xPose() }
-        ({driveLeftTrigger > 0.1}).whenTrue {
-            safeAnimationCheck(PERSONINCONTROL.DRIVER) {
-            }
-        }
+//        ({driveLeftTrigger > 0.1}).whenTrue {
+//            safeAnimationCheck(PERSONINCONTROL.DRIVER) {
+//            }
+//        }
 
         // add two statements here to run the motor whenTrue, and stop the motor when a button is false
+//        driverController::y.whenTrue { OpenLoopSubsystem.runMotor(0.25) }
+//        driverController::y.whenFalse { OpenLoopSubsystem.runMotor(0.0) }
+//        ({driverController.leftTrigger > 0.1}).whenTrue { OpenLoopSubsystem.runMotor(-driveLeftTrigger) }
+//        ({driverController.rightTrigger > 0.1}).whenTrue { OpenLoopSubsystem.runMotor(driveRightTrigger) }
+//
+//        ({driverController.leftTrigger > 0.1 || driverController.rightTrigger > 0.1}).whenFalse { OpenLoopSubsystem.runMotor(0.0) }
+
 
 
     }
