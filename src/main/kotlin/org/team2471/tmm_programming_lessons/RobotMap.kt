@@ -4,28 +4,13 @@ package org.team2471.tmm_programming_lessons
 
 
 object Sparks {
-    const val SHOULDER_A = 16
-    const val SHOULDER_B = 4
-    const val ELBOW = 2
-    const val WRIST = 17
-
-    const val INTAKE = 30
-
-    const val SPARE1 = 38
-    const val SPARE2 = 39
+    const val SIMPLE_MOTOR = 16
 }
 
 object AnalogSensors {
-    const val SHOULDER = 1
-    const val ELBOW = 2
-    const val WRIST = 0
-
 }
 
 object DigitalSensors {
-    const val SHOULDER_SWTICH = 6
-    const val ELBOW_SWITCH = 5
-    const val WRIST_SWITCH = 4
 }
 
 object Falcons {
@@ -41,7 +26,6 @@ object Falcons {
     const val SPARE1_STEER = 33
     const val SPARE2_DRIVE = 35
     const val SPARE2_STEER = 36
-
 }
 
 object CANCoders {

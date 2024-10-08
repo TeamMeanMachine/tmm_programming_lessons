@@ -69,6 +69,10 @@ object OI : Subsystem("OI") {
             safeAnimationCheck(PERSONINCONTROL.DRIVER) {
             }
         }
+
+        // add two statements here to run the motor whenTrue, and stop the motor when a button is false
+
+
     }
 
     override fun preEnable() {
