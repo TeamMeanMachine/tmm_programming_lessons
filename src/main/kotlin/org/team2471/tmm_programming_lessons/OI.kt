@@ -70,6 +70,10 @@ object OI : Subsystem("OI") {
             }
         }
 
+        driverController::leftBumper.whenTrue { ClosedLoopPosition.positianA() }
+        driverController::rightBumper.whenTrue { ClosedLoopPosition.positianB() }
+//        driverController::leftBumper.whenTrue { OpenLoopSubsystem.motorSpin(0.30) }
+
         // add two statements here to run the motor whenTrue, and stop the motor when a button is false
 
 

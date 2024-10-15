@@ -16,7 +16,6 @@ import org.team2471.frc.lib.motion.following.demoMode
 import org.team2471.frc.lib.units.degrees
 import org.team2471.frc.lib.util.RobotMode
 import org.team2471.frc.lib.util.robotMode
-import org.team2471.tmm_programming_lessons.testing.*
 import java.net.NetworkInterface
 
 
@@ -71,6 +70,7 @@ object Robot : LoggedMeanlibRobot() {
         println("Activating Drive!")
         Drive.zeroGyro()
         Drive.heading = 0.0.degrees
+        ClosedLoopPosition
 
 //        PoseEstimator
 //        println("Activating PoseEstimator! currentPose ${PoseEstimator.currentPose}")
@@ -81,6 +81,7 @@ object Robot : LoggedMeanlibRobot() {
         println("starting enable")
         FieldManager.beforeFirstEnable = false
         Drive.enable()
+        ClosedLoopPosition.enable()
         println("field centric? ${SmartDashboard.getBoolean("Use Gyro", true) && !DriverStation.isAutonomous()}")
         println("ending enable")
     }
@@ -119,6 +120,7 @@ object Robot : LoggedMeanlibRobot() {
         OI.driverController.rumble = 0.0
         OI.operatorController.rumble = 0.0
         Drive.disable()
+        ClosedLoopPosition.disable()
     }
 
     private fun initTimeMeasurement(){
