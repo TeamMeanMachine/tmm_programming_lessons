@@ -16,14 +16,17 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
     val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Moter1"))
 
+    // declare a val to return the motor's encoder position.  Use a get() function
     val motorAngle: Angle
         get() = testMotor.position.degrees
 
+    // declare a var to contain the setpoint for the position pid
     var angleSetpoint: Angle = motorAngle
         set(value) {
             field = value.asDegrees.coerceIn(0.0, 42.0).degrees
         }
 
+    // declare a pd controller from meanlib to control the motor with software
     val postitionController = PDController(0.01, 0.0)
 
     // create a function here to set the motor power or run the motor, which takes a percent - call setPercentOutput()
@@ -32,6 +35,13 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     }
 
     init {
+        testMotor.config {
+            // next problem:
+            // use println or network tables to display the motor position from the encoder, then manually turn the motor to set the feedbackCoefficient below
+            // the units for the feedback coefficient are (native units) / (ticks)
+            feedbackCoefficient = 1.0
+        }
+
         GlobalScope.launch {
             periodic {
                 val error = angleSetpoint - motorAngle
