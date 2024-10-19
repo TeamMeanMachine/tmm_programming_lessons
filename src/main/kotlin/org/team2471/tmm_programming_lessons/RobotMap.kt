@@ -7,10 +7,20 @@ object Sparks {
     const val SIMPLE_MOTOR = 16
 }
 
+object Talons {
+    const val LEFT_GRABBER_PITCH = 40
+
+}
+
 object AnalogSensors {
+    const val LEFT_GRABBER_ENCODDER = 0
 }
 
 object DigitalSensors {
+}
+
+object PWMOutputs {
+    const val LEFT_AIR_VALVE = 0
 }
 
 object Falcons {
