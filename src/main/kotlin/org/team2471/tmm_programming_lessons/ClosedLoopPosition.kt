@@ -54,7 +54,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
             feedbackCoefficient = 360.0 / 1.0
             // pid here ??
             pid {
-                p(250.0)
+                p(0.250)
 //                d(100.0)
             }
         }
