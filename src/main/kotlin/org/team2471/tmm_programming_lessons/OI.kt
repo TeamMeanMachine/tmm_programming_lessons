@@ -70,8 +70,18 @@ object OI : Subsystem("OI") {
             }
         }
 
-        driverController::leftBumper.whenTrue { ClosedLoopPosition.positianA() }
-        driverController::rightBumper.whenTrue { ClosedLoopPosition.positianB() }
+        driverController::leftBumper.whenTrue { BalloonGrabber.pitchTotePosition() }
+        driverController::rightBumper.whenTrue { BalloonGrabber.pitchCarpetPosition() }
+        ({driverController::dPad.get() == Controller.Direction.UP}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle + 30.0.degrees) }
+        ({driverController::dPad.get() == Controller.Direction.DOWN}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle - 30.0.degrees) }
+
+        ({driverController::dPad.get() == Controller.Direction.LEFT}).whenTrue { BalloonGrabber.balloonIntake() }
+        ({driverController::dPad.get() == Controller.Direction.RIGHT}).whenTrue { BalloonGrabber.balloonRelease() }
+        driverController::y.whenTrue {
+            BalloonGrabber.fansOn = !BalloonGrabber.fansOn
+            println("Setting Fan: ${BalloonGrabber.fansOn}")
+        }
+
 //        driverController::leftBumper.whenTrue { OpenLoopSubsystem.motorSpin(0.30) }
 
         // add two statements here to run the motor whenTrue, and stop the motor when a button is false

@@ -4,12 +4,11 @@ package org.team2471.tmm_programming_lessons
 
 
 object Sparks {
-    const val SIMPLE_MOTOR = 16
+    const val SIMPLE_MOTOR = 17
+    const val LEFT_BALLOON_PIVOT = 16
 }
 
 object Talons {
-    const val LEFT_GRABBER_PITCH = 40
-
 }
 
 object AnalogSensors {
@@ -20,7 +19,8 @@ object DigitalSensors {
 }
 
 object PWMOutputs {
-    const val LEFT_AIR_VALVE = 0
+    const val LEFT_FANS = 0
+    const val LEFT_AIR_VALVE = 2
 }
 
 object Falcons {
