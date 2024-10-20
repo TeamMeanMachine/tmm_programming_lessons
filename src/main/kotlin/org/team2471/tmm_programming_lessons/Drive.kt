@@ -139,7 +139,7 @@ object Drive : Subsystem("Drive"), SwerveDrive {
     override var heading: Angle
         get() = (gyroOffset + -gyro.angle).wrap()
         set(value) {
-//            gyro.reset()
+            gyro.reset()
             gyroOffset = -gyro.angle + value
         }
 
