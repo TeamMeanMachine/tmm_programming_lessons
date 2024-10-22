@@ -1,17 +1,12 @@
 package org.team2471.tmm_programming_lessons
 
-import edu.wpi.first.wpilibj.DriverStation
-import org.jetbrains.kotlin.gradle.utils.`is`
-import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.input.*
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.cube
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.squareWithSign
-import org.team2471.frc.lib.motion.following.demoMode
 import org.team2471.frc.lib.motion.following.xPose
-import org.team2471.frc.lib.units.degrees
 
 object OI : Subsystem("OI") {
     val driverController = XboxController(0)
@@ -70,8 +65,8 @@ object OI : Subsystem("OI") {
             }
         }
 
-        driverController::leftBumper.whenTrue { ClosedLoopPosition.positianA() }
-        driverController::rightBumper.whenTrue { ClosedLoopPosition.positianB() }
+        driverController::leftBumper.whenTrue { ClosedLoopPosition.positionA() }
+        driverController::rightBumper.whenTrue { ClosedLoopPosition.positionB() }
 //        driverController::leftBumper.whenTrue { OpenLoopSubsystem.motorSpin(0.30) }
 
         // add two statements here to run the motor whenTrue, and stop the motor when a button is false

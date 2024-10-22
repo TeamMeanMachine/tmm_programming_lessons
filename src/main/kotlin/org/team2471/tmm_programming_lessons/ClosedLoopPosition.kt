@@ -7,24 +7,24 @@ import org.team2471.frc.lib.actuators.SparkMaxID
 import org.team2471.frc.lib.control.PDController
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
-import org.team2471.frc.lib.framework.use
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.degrees
 
 
 object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
-    val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Moter1"))
+    val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "ClosedLoopPosition/testMotor"))
 
-    val motorAngle: Angle
-        get() = testMotor.position.degrees
+    // Problem 2 objective is to control the motor by using its encoder and software functions from meanlib
 
-    var angleSetpoint: Angle = motorAngle
-        set(value) {
-            field = value.asDegrees.coerceIn(0.0, 42.0).degrees
-        }
+    // add a val to store the angle of the encoder, see 2024 pivot for an example
 
-    val postitionController = PDController(0.01, 0.0)
+
+    // add a var to store the motor angle setpoint
+
+
+    // create a val of type PDController from meanlib
+
 
     // create a function here to set the motor power or run the motor, which takes a percent - call setPercentOutput()
     fun motorSpin(percentage: Double ) {
@@ -34,24 +34,20 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     init {
         GlobalScope.launch {
             periodic {
-                val error = angleSetpoint - motorAngle
-                motorSpin(postitionController.update(error.asDegrees))
+                // calculate the error between angleSetpoint and motorAngle and store it in a val
+
+                // update the PDController and set the motor power with the result
+
             }
         }
     }
 
-//    override suspend fun default() {
-//        val error = angleSetpoint - motorAngle
-//        motorSpin(postitionController.update(error.asDegrees))
-//    }
+    // make two suspending functions to map to buttons in OI which set the angle setpoint to different targets and add a print to each one
+    suspend fun positionA() {
 
-    suspend fun positianA() {
-        angleSetpoint = 3.0.degrees
-        println("3 degress")
     }
 
-    suspend fun positianB() {
-        angleSetpoint = 1.0.degrees
-        println("1 degrees")
+    suspend fun positionB() {
+
     }
 }
