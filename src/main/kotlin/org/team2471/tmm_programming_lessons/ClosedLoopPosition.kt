@@ -17,6 +17,11 @@ import org.team2471.tmm_programming_lessons.Drive.modules
 import org.team2471.tmm_programming_lessons.Drive.motorAngle0Entry
 
 
+// setRawOffset( Angle ) - make a button which can zero the little white arm
+// software limits low and high
+// motion profiling - CubicMap - look at balloon grabber in this project - use a new function animateToAngle() and use it on the PositionA and B functions
+// arbitrary feed forward - coming soon
+
 object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // make a table and an entry for motor angle
     val table = NetworkTableInstance.getDefault().getTable(name)
@@ -24,7 +29,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
 
 
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
-    val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Moter1"))
+    val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Motor1"))
 
     // declare a val to return the motor's encoder position.  Use a get() function
     val motorAngle: Angle
@@ -39,11 +44,15 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
         }
 
     // declare a pd controller from meanlib to control the motor with software
-//    val postitionController = PDController(0.0006, 0.0)
+//    val positionController = PDController(0.0006, 0.0)
 
     // create a function here to set the motor power or run the motor, which takes a percent - call setPercentOutput()
     fun motorSpin(percentage: Double ) {
         testMotor.setPercentOutput(percentage)
+    }
+
+    fun zero() {
+
     }
 
     init {
@@ -62,7 +71,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
         GlobalScope.launch {
             periodic {
 //                val error = angleSetpoint - motorAngle
-//                motorSpin(postitionController.update(error.asDegrees))
+//                motorSpin(positionController.update(error.asDegrees))
                 testMotorAngleEntry.setDouble(motorAngle.asDegrees)
 
             }
@@ -71,15 +80,15 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
 
 //    override suspend fun default() {
 //        val error = angleSetpoint - motorAngle
-//        motorSpin(postitionController.update(error.asDegrees))
+//        motorSpin(positionController.update(error.asDegrees))
 //    }
 
-    suspend fun positianA() {
+    suspend fun positionA() {
         angleSetpoint = 45.0.degrees
-        println("45 degress")
+        println("45 degrees")
     }
 
-    suspend fun positianB() {
+    suspend fun positionB() {
         angleSetpoint = 90.0.degrees
         println("90 degrees")
     }
