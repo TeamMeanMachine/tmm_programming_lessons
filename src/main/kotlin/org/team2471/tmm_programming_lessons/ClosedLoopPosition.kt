@@ -9,12 +9,14 @@ import org.team2471.frc.lib.control.PDController
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.framework.use
+import org.team2471.frc.lib.math.cubicMap
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.asFeet
 import org.team2471.frc.lib.units.degrees
 import org.team2471.tmm_programming_lessons.Drive.Module
 import org.team2471.tmm_programming_lessons.Drive.modules
 import org.team2471.tmm_programming_lessons.Drive.motorAngle0Entry
+import kotlin.math.absoluteValue
 
 
 // setRawOffset( Angle ) - make a button which can zero the little white arm
@@ -26,6 +28,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // make a table and an entry for motor angle
     val table = NetworkTableInstance.getDefault().getTable(name)
     val testMotorAngleEntry = table.getEntry("Motor Angle")
+    val testMotorAngleSetpointEntry = table.getEntry("Motor Angle Setpoint")
 
 
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
@@ -38,7 +41,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // declare a var to contain the setpoint for the position pid
     var angleSetpoint: Angle = motorAngle
         set(value) {
-            field = value.asDegrees.coerceIn(-1000.0, 1000.0).degrees
+            field = value.asDegrees.coerceIn(0.0, 180.0).degrees
             // tell the motor to go to position ??
             testMotor.setPositionSetpoint(field.asDegrees)
         }
@@ -51,8 +54,32 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
         testMotor.setPercentOutput(percentage)
     }
 
-    fun zero() {
+    fun zeroTestMotor() {
+        testMotor.setRawOffset(0.0)
+        angleSetpoint = 0.0.degrees
+        println("ZERO")
+    }
 
+    suspend fun animateToAngle(angle: Angle) {
+        var t = 0.0
+        val startingAngle = motorAngle.asDegrees
+        var maxTime = (angle.asDegrees - startingAngle).absoluteValue / 180.0
+        println("maxTime $maxTime")
+        GlobalScope.launch {
+            periodic {
+                angleSetpoint = cubicMap(0.0, maxTime, startingAngle, angle.asDegrees, t).degrees
+                t += 0.02
+                if (t > maxTime) {
+                    stop()
+                    angleSetpoint = angle
+                    println("set angleSetpoint $angle")
+                }
+            }
+        }
+    }
+
+    override fun preEnable() {
+        angleSetpoint = 0.0.degrees
     }
 
     init {
@@ -73,6 +100,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
 //                val error = angleSetpoint - motorAngle
 //                motorSpin(positionController.update(error.asDegrees))
                 testMotorAngleEntry.setDouble(motorAngle.asDegrees)
+                testMotorAngleSetpointEntry.setDouble(angleSetpoint.asDegrees)
 
             }
         }
@@ -84,12 +112,12 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
 //    }
 
     suspend fun positionA() {
-        angleSetpoint = 45.0.degrees
-        println("45 degrees")
+        animateToAngle(0.0.degrees)
+        println("0 degrees")
     }
 
     suspend fun positionB() {
-        angleSetpoint = 90.0.degrees
+        animateToAngle(90.0.degrees)
         println("90 degrees")
     }
 }

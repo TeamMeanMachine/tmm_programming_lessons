@@ -82,6 +82,10 @@ object OI : Subsystem("OI") {
             println("Setting Fan: ${BalloonGrabber.fansOn}")
         }
 
+        driverController::leftThumbstickButton.whenTrue { ClosedLoopPosition.zeroTestMotor() }
+        driverController::a.whenTrue { ClosedLoopPosition.positionA() }
+        driverController::b.whenTrue { ClosedLoopPosition.positionB() }
+
 //        driverController::leftBumper.whenTrue { OpenLoopSubsystem.motorSpin(0.30) }
 
         // add two statements here to run the motor whenTrue, and stop the motor when a button is false

@@ -68,7 +68,7 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
     suspend fun animateToAngle(angle: Angle) {
         val startingAngle = pitchAngle.asDegrees
         var t = 0.0
-        var maxTime = (angle.asDegrees - startingAngle).absoluteValue / 180.0
+        var maxTime = (angle.asDegrees - startingAngle).absoluteValue / 180.0  // t = d / r   rate in degrees per second
         periodic {
             pitchSetpoint = cubicMap(0.0, maxTime, startingAngle, angle.asDegrees, t).degrees
             t += 0.02
