@@ -83,6 +83,7 @@ object Robot : LoggedMeanlibRobot() {
         FieldManager.beforeFirstEnable = false
         Drive.enable()
         ClosedLoopPosition.enable()
+        BalloonGrabber.enable()
         println("field centric? ${SmartDashboard.getBoolean("Use Gyro", true) && !DriverStation.isAutonomous()}")
         println("ending enable")
     }

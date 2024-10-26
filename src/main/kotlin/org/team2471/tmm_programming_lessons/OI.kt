@@ -70,10 +70,20 @@ object OI : Subsystem("OI") {
             }
         }
 
-        driverController::leftBumper.whenTrue { BalloonGrabber.pitchTotePosition() }
-        driverController::rightBumper.whenTrue { BalloonGrabber.pitchCarpetPosition() }
-        ({driverController::dPad.get() == Controller.Direction.UP}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle + 30.0.degrees) }
-        ({driverController::dPad.get() == Controller.Direction.DOWN}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle - 30.0.degrees) }
+//        driverController::leftBumper.whenTrue { BalloonGrabber.pitchTotePosition() }
+//        driverController::rightBumper.whenTrue { BalloonGrabber.pitchCarpetPosition() }
+        driverController::rightBumper.whenTrue {
+            if (BalloonGrabber.intakeState == IntakeState.INTAKING) {
+                BalloonGrabber.intakeState = IntakeState.DROPPING
+            } else if (BalloonGrabber.intakeState == IntakeState.DROPPING) {
+                BalloonGrabber.intakeState = IntakeState.INTAKING
+            }
+            println("Intake state is ${BalloonGrabber.intakeState}")
+
+        }
+//        ({driverController::dP
+//        ad.get() == Controller.Direction.UP}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle + 30.0.degrees) }
+//        ({driverController::dPad.get() == Controller.Direction.DOWN}).whenTrue { BalloonGrabber.animateToAngle(BalloonGrabber.pitchAngle - 30.0.degrees) }
 
         ({driverController::dPad.get() == Controller.Direction.LEFT}).whenTrue { BalloonGrabber.balloonIntake() }
         ({driverController::dPad.get() == Controller.Direction.RIGHT}).whenTrue { BalloonGrabber.balloonRelease() }

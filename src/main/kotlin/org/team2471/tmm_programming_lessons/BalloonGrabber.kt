@@ -1,10 +1,14 @@
 package org.team2471.tmm_programming_lessons
 
+import com.revrobotics.ColorSensorV3
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.AnalogEncoder
+import edu.wpi.first.wpilibj.I2C
 import edu.wpi.first.wpilibj.Relay
 import edu.wpi.first.wpilibj.Servo
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.actuators.MotorController
 import org.team2471.frc.lib.actuators.SparkMaxID
@@ -21,6 +25,10 @@ import org.team2471.frc.lib.units.degrees
 import org.team2471.tmm_programming_lessons.ClosedLoopPosition.testMotor
 import kotlin.math.absoluteValue
 import kotlin.math.cos
+import org.team2471.frc.lib.coroutines.parallel
+import org.team2471.frc.lib.coroutines.suspendUntil
+import org.team2471.frc.lib.util.Timer
+
 
 object BalloonGrabber : Subsystem("BalloonGrabber") {
     val table = NetworkTableInstance.getDefault().getTable(name)
@@ -31,7 +39,15 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
     val leftPitchEncoder = AnalogEncoder(AnalogSensors.LEFT_GRABBER_ENCODDER)
     val leftAirValve = Servo(PWMOutputs.LEFT_AIR_VALVE)
 
-    val leftFans = Relay(PWMOutputs.LEFT_FANS)
+    //val leftFans = Relay(PWMOutputs.LEFT_FANS)
+    val leftFans = MotorController(TalonID(36, "hi there"))
+
+    private val i2cPort: I2C.Port = I2C.Port.kMXP
+    private val colorSensor = ColorSensorV3(i2cPort)
+
+
+    val CARPET_ANGLE = 100.0.degrees
+    val TOTE_ANGLE = (-50.0).degrees
 
     var fansOn = false
 
@@ -41,13 +57,17 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
 
     private var pitchSetpoint: Angle = pitchAngle
         set(value) {
-            field = value.asDegrees.coerceIn(-50.0, 100.0).degrees
+            field = value.asDegrees.coerceIn(-50.0, 105.0).degrees
             println("Setpoint: $field")
         }
     val feedForward: Double
         get() = -.04 * sin(pitchAngle)
 
     val pitchController = PDController(0.01, 0.001)
+
+    var intakeState: IntakeState = IntakeState.INTAKING
+
+    var prevIntakeState = intakeState
 
     init {
         pitchSetpoint = pitchAngle
@@ -57,24 +77,48 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
                 leftPitchMotor.setPercentOutput(feedForward + pitchController.update((pitchSetpoint - pitchAngle).asDegrees))
 
                 if (fansOn) {
-                    leftFans.set(Relay.Value.kReverse)
+                    leftFans.setPercentOutput(100.0)
+//                    leftFans.set(Relay.Value.kReverse)
                 } else {
-                    leftFans.set(Relay.Value.kForward)
+                    leftFans.setPercentOutput(0.0)
+//                    leftFans.set(Relay.Value.kForward)
                 }
+//                println("Color Sensor : ${colorSensor.color}")
             }
         }
     }
 
-    suspend fun animateToAngle(angle: Angle) {
-        val startingAngle = pitchAngle.asDegrees
-        var t = 0.0
-        var maxTime = (angle.asDegrees - startingAngle).absoluteValue / 180.0
+    override suspend fun default()  {
+        val t = Timer()
         periodic {
-            pitchSetpoint = cubicMap(0.0, maxTime, startingAngle, angle.asDegrees, t).degrees
-            t += 0.02
-            if (t > maxTime) {
-                stop()
+
+            if (intakeState != prevIntakeState) {
+                t.start()
+                prevIntakeState = intakeState
             }
+            when (intakeState) {
+                IntakeState.INTAKING -> {
+                    balloonIntake()
+                    animateToAngle(CARPET_ANGLE, t.get())
+                    print("in IntakeState.Intaking")
+                }
+                IntakeState.DROPPING -> {
+                    animateToAngle(TOTE_ANGLE, t.get())
+                    if (pitchAngle <= 0.0.degrees) {
+//                        balloonRelease()
+                    }
+                    println("In INtakeState.Dropping")
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun animateToAngle(angle: Angle, timeSinceStartSeconds: Double) {
+        val startingAngle = pitchAngle.asDegrees
+        var maxTime = (angle.asDegrees - startingAngle).absoluteValue / 180.0
+        if (timeSinceStartSeconds <= maxTime) {
+            pitchSetpoint = cubicMap(0.0, maxTime, startingAngle, angle.asDegrees, timeSinceStartSeconds).degrees
         }
     }
 
@@ -87,12 +131,10 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
     fun balloonRelease() {
         leftAirValve.set(0.0)
     }
+}
 
-    suspend fun pitchCarpetPosition() {
-        animateToAngle(100.0.degrees)
-    }
-
-    suspend fun pitchTotePosition() {
-        animateToAngle(-50.0.degrees)
-    }
+enum class IntakeState {
+    INTAKING,
+    DROPPING,
+    MANUAL
 }
