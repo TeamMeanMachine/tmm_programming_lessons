@@ -34,26 +34,38 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
     val table = NetworkTableInstance.getDefault().getTable(name)
 
     val leftPitchAngleEntry = table.getEntry("Left Pitch Angle")
+    val encoderTicksEntry = table.getEntry("Encoder Ticks")
+    val encoderTicksOffsetEntry = table.getEntry("Encoder Ticks Offset")
 
     val leftPitchMotor = MotorController(SparkMaxID(Sparks.LEFT_BALLOON_PIVOT, "BalloonGrabber/leftPitchMotor"))
     val leftPitchEncoder = AnalogEncoder(AnalogSensors.LEFT_GRABBER_ENCODDER)
     val leftAirValve = Servo(PWMOutputs.LEFT_AIR_VALVE)
 
     //val leftFans = Relay(PWMOutputs.LEFT_FANS)
-    val leftFans = MotorController(TalonID(36, "hi there"))
+//    val leftFans = MotorController(TalonID(36, "hi there"))
 
     private val i2cPort: I2C.Port = I2C.Port.kMXP
     private val colorSensor = ColorSensorV3(i2cPort)
 
 
-    val CARPET_ANGLE = 100.0.degrees
-    val TOTE_ANGLE = (-50.0).degrees
+    val CARPET_ANGLE = -38.0.degrees
+    val TOTE_ANGLE = (180.0).degrees
 
     var fansOn = false
 
+    val encoderRawTicks: Double
+        get() = leftPitchEncoder.get() * 360.0
+    var encoderTicksOffset: Double
+        get() = encoderTicksOffsetEntry.getDouble(0.616)
+        set(value) {
+            encoderTicksOffsetEntry.setDouble(value)
+            encoderTicksOffsetEntry.setPersistent()
+        }
+
+
     val pitchAngle: Angle
         //      offset
-        get() = (239.8 - leftPitchEncoder.get() * 360.0).degrees
+        get() = (-270.0 + encoderRawTicks).degrees
 
     private var pitchSetpoint: Angle = pitchAngle
         set(value) {
@@ -61,7 +73,7 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
             println("Setpoint: $field")
         }
     val feedForward: Double
-        get() = -.04 * sin(pitchAngle)
+        get() = -0.04 * sin(pitchAngle)
 
     val pitchController = PDController(0.01, 0.001)
 
@@ -74,13 +86,15 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
         GlobalScope.launch {
             periodic {
                 leftPitchAngleEntry.setDouble(pitchAngle.asDegrees)
-                leftPitchMotor.setPercentOutput(feedForward + pitchController.update((pitchSetpoint - pitchAngle).asDegrees))
+                encoderTicksEntry.setDouble(encoderRawTicks)
+
+                leftPitchMotor.setPercentOutput(feedForward + pitchController.update((pitchAngle - pitchSetpoint).asDegrees))
 
                 if (fansOn) {
-                    leftFans.setPercentOutput(100.0)
+//                    leftFans.setPercentOutput(100.0)
 //                    leftFans.set(Relay.Value.kReverse)
                 } else {
-                    leftFans.setPercentOutput(0.0)
+//                    leftFans.setPercentOutput(0.0)
 //                    leftFans.set(Relay.Value.kForward)
                 }
 //                println("Color Sensor : ${colorSensor.color}")
