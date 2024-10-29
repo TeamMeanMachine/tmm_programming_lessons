@@ -30,6 +30,7 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     val testMotorAngleEntry = table.getEntry("Motor Angle")
     val testMotorAngleSetpointEntry = table.getEntry("Motor Angle Setpoint")
 
+    val angleList = arrayListOf<Double>()
 
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
     val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Motor1"))
@@ -41,22 +42,34 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     // declare a var to contain the setpoint for the position pid
     var angleSetpoint: Angle = motorAngle
         set(value) {
-            field = value.asDegrees.coerceIn(0.0, 180.0).degrees
+            field = value.asDegrees.coerceIn(-28.0, 208.0).degrees
             // tell the motor to go to position ??
-            testMotor.setPositionSetpoint(field.asDegrees)
+            testMotor.setPositionSetpoint(field.asDegrees, feedForward(motorAngle))
         }
+
+    suspend fun testFeedForward(increment: Double) {
+        var power = 0.0
+        periodic (0.04) {
+            power += increment
+            testMotor.setPercentOutput(power)
+            println("power = $power, angle = $motorAngle")
+            if (power > 0.1) {
+                stop()
+            }
+        }
+    }
 
     // declare a pd controller from meanlib to control the motor with software
 //    val positionController = PDController(0.0006, 0.0)
 
     // create a function here to set the motor power or run the motor, which takes a percent - call setPercentOutput()
     fun motorSpin(percentage: Double ) {
-        testMotor.setPercentOutput(percentage)
+        testMotor.setPercentOutput(feedForward(motorAngle) + percentage)
     }
 
-    fun zeroTestMotor() {
-        testMotor.setRawOffset(0.0)
-        angleSetpoint = 0.0.degrees
+    fun zeroTestMotor(value: Double = -28.0) {
+        testMotor.setRawOffset(value)
+        angleSetpoint = value.degrees
         println("ZERO")
     }
 
@@ -79,10 +92,11 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
     }
 
     override fun preEnable() {
-        angleSetpoint = 0.0.degrees
+        zeroTestMotor()
     }
 
     init {
+
         testMotor.config {
             // next problem:
             // use println or network tables to display the motor position from the encoder, then manually turn the motor to set the feedbackCoefficient below
@@ -110,6 +124,8 @@ object ClosedLoopPosition : Subsystem("ClosedLoop") {
 //        val error = angleSetpoint - motorAngle
 //        motorSpin(positionController.update(error.asDegrees))
 //    }
+
+    fun feedForward(angle: Angle) = 0.0079 * angle.cos()
 
     suspend fun positionA() {
         animateToAngle(0.0.degrees)

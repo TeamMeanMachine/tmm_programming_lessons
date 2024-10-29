@@ -110,9 +110,10 @@ object Robot : LoggedMeanlibRobot() {
         println("test mode begin. Hi.")
 //        Intake.pidTestOne()
 //        pathFollowTest()
-        Drive.setAngleOffsets()
+//        Drive.setAngleOffsets()
 //        useTest()
 //        Drive.steeringTests()
+        ClosedLoopPosition.testFeedForward(0.00005)
         println("finished testing")
     }
 

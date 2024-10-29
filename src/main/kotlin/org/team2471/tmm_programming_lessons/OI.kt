@@ -12,6 +12,7 @@ import org.team2471.frc.lib.math.squareWithSign
 import org.team2471.frc.lib.motion.following.demoMode
 import org.team2471.frc.lib.motion.following.xPose
 import org.team2471.frc.lib.units.degrees
+import org.team2471.tmm_programming_lessons.testing.autoFeedForwardTest
 
 object OI : Subsystem("OI") {
     val driverController = XboxController(0)
@@ -85,6 +86,8 @@ object OI : Subsystem("OI") {
         driverController::leftThumbstickButton.whenTrue { ClosedLoopPosition.zeroTestMotor() }
         driverController::a.whenTrue { ClosedLoopPosition.positionA() }
         driverController::b.whenTrue { ClosedLoopPosition.positionB() }
+        //driverController::rightThumbstickButton.whenTrue { autoFeedForwardTest(ClosedLoopPosition.testMotor, {ClosedLoopPosition.motorAngle}, ClosedLoopPosition.angleList) }
+        //driverController::rightThumbstickButton.whenTrue { ClosedLoopPosition.testFeedForward(0.001) }
 
 //        driverController::leftBumper.whenTrue { OpenLoopSubsystem.motorSpin(0.30) }
 
