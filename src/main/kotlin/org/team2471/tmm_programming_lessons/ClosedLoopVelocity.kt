@@ -38,20 +38,18 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
     var velocitySetpoint: Double = motorVelocity
         set(value) {
             field = value.coerceIn(0.0, 10000.0)
-            // tell the motor to go to position ??
+            // tell the motor to go to velocity ??
 //            testMotor.setVelocitySetpoint(field, feedForward(motorVelocity))
         }
 
-    // declare a pd controller from meanlib to control the motor with software
-    val velocityController = PDController(0.00001, 0.00001)
+//    // declare a pd controller from meanlib to control the motor with software
+//    val velocityController = PDController(0.00001, 0.00001)
 
     override fun postEnable() {
         motorPower = 0.0
     }
     init {
         testMotor.config {
-            // next problem:
-            // use println or network tables to display the motor position from the encoder, then manually turn the motor to set the feedbackCoefficient below
             // the units for the feedback coefficient are (native units) / (ticks)
             feedbackCoefficient = 1.0
             // pid here ??
@@ -63,9 +61,9 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
 
         GlobalScope.launch {
             periodic {
-                val error = velocitySetpoint - motorVelocity
-                motorPower += velocityController.update(error)
-                testMotor.setPercentOutput(motorPower)
+//                val error = velocitySetpoint - motorVelocity
+//                motorPower += velocityController.update(error)
+//                testMotor.setPercentOutput(motorPower)
                 testMotorVelocityEntry.setDouble(motorVelocity)
                 testMotorVelocitySetpointEntry.setDouble(velocitySetpoint)
 
