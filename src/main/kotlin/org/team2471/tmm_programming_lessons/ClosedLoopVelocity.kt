@@ -39,8 +39,11 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
         set(value) {
             field = value.coerceIn(0.0, 10000.0)
             // tell the motor to go to velocity ??
-//            testMotor.setVelocitySetpoint(field, feedForward(motorVelocity))
+            testMotor.setVelocitySetpoint(field, feedForward(field))
+            println("Feed forward: ${feedForward(field)}")
         }
+
+    fun feedForward(rpm: Double) = 1024.0 * rpm / 5925.0
 
 //    // declare a pd controller from meanlib to control the motor with software
 //    val velocityController = PDController(0.00001, 0.00001)
@@ -48,15 +51,16 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
     override fun postEnable() {
         motorPower = 0.0
     }
+
     init {
         testMotor.config {
             // the units for the feedback coefficient are (native units) / (ticks)
             feedbackCoefficient = 1.0
             // pid here ??
-//            pid {
-//                p(0.250)
-////                d(100.0)
-//            }
+            pid {
+                p(0.0000001)
+//                d(0.00001)
+            }
         }
 
         GlobalScope.launch {
