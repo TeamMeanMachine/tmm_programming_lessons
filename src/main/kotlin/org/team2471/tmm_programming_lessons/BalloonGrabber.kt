@@ -8,19 +8,14 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.actuators.MotorController
 import org.team2471.frc.lib.actuators.SparkMaxID
-import org.team2471.frc.lib.actuators.TalonID
 import org.team2471.frc.lib.control.PDController
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
-import org.team2471.frc.lib.math.CubicSpline
 import org.team2471.frc.lib.math.cubicMap
 import org.team2471.frc.lib.units.Angle
 import org.team2471.frc.lib.units.Angle.Companion.sin
-import org.team2471.frc.lib.units.asRadians
 import org.team2471.frc.lib.units.degrees
-import org.team2471.tmm_programming_lessons.ClosedLoopPosition.testMotor
 import kotlin.math.absoluteValue
-import kotlin.math.cos
 
 object BalloonGrabber : Subsystem("BalloonGrabber") {
     val table = NetworkTableInstance.getDefault().getTable(name)

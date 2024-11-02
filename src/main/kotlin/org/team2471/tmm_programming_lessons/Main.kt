@@ -71,7 +71,7 @@ object Robot : LoggedMeanlibRobot() {
         Drive.zeroGyro()
         Drive.heading = 0.0.degrees
         BalloonGrabber
-        ClosedLoopPosition
+        ClosedLoopVelocity
 
 //        PoseEstimator
 //        println("Activating PoseEstimator! currentPose ${PoseEstimator.currentPose}")
@@ -82,7 +82,7 @@ object Robot : LoggedMeanlibRobot() {
         println("starting enable")
         FieldManager.beforeFirstEnable = false
         Drive.enable()
-        ClosedLoopPosition.enable()
+        ClosedLoopVelocity.enable()
         println("field centric? ${SmartDashboard.getBoolean("Use Gyro", true) && !DriverStation.isAutonomous()}")
         println("ending enable")
     }
@@ -113,7 +113,7 @@ object Robot : LoggedMeanlibRobot() {
 //        Drive.setAngleOffsets()
 //        useTest()
 //        Drive.steeringTests()
-        ClosedLoopPosition.testFeedForward(0.00005)
+        //ClosedLoopVelocity.testFeedForward(0.00005)
         println("finished testing")
     }
 
@@ -122,7 +122,7 @@ object Robot : LoggedMeanlibRobot() {
         OI.driverController.rumble = 0.0
         OI.operatorController.rumble = 0.0
         Drive.disable()
-        ClosedLoopPosition.disable()
+        ClosedLoopVelocity.disable()
     }
 
     private fun initTimeMeasurement(){

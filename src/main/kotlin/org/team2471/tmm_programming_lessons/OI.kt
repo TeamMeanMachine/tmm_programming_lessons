@@ -1,18 +1,13 @@
 package org.team2471.tmm_programming_lessons
 
-import edu.wpi.first.wpilibj.DriverStation
-import org.jetbrains.kotlin.gradle.utils.`is`
-import org.team2471.frc.lib.coroutines.delay
 import org.team2471.frc.lib.framework.Subsystem
 import org.team2471.frc.lib.input.*
 import org.team2471.frc.lib.math.Vector2
 import org.team2471.frc.lib.math.cube
 import org.team2471.frc.lib.math.deadband
 import org.team2471.frc.lib.math.squareWithSign
-import org.team2471.frc.lib.motion.following.demoMode
 import org.team2471.frc.lib.motion.following.xPose
 import org.team2471.frc.lib.units.degrees
-import org.team2471.tmm_programming_lessons.testing.autoFeedForwardTest
 
 object OI : Subsystem("OI") {
     val driverController = XboxController(0)
@@ -83,9 +78,9 @@ object OI : Subsystem("OI") {
             println("Setting Fan: ${BalloonGrabber.fansOn}")
         }
 
-        driverController::leftThumbstickButton.whenTrue { ClosedLoopPosition.zeroTestMotor() }
-        driverController::a.whenTrue { ClosedLoopPosition.positionA() }
-        driverController::b.whenTrue { ClosedLoopPosition.positionB() }
+        //driverController::leftThumbstickButton.whenTrue { ClosedLoopVelocity.zeroTestMotor() }
+        driverController::a.whenTrue { ClosedLoopVelocity.positionA() }
+        driverController::b.whenTrue { ClosedLoopVelocity.positionB() }
         //driverController::rightThumbstickButton.whenTrue { autoFeedForwardTest(ClosedLoopPosition.testMotor, {ClosedLoopPosition.motorAngle}, ClosedLoopPosition.angleList) }
         //driverController::rightThumbstickButton.whenTrue { ClosedLoopPosition.testFeedForward(0.001) }
 
