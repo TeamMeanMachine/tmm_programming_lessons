@@ -4,6 +4,7 @@ import com.revrobotics.ColorSensorV3
 import edu.wpi.first.networktables.NetworkTableInstance
 import edu.wpi.first.wpilibj.AnalogEncoder
 import edu.wpi.first.wpilibj.I2C
+import edu.wpi.first.wpilibj.PWM
 import edu.wpi.first.wpilibj.Relay
 import edu.wpi.first.wpilibj.Servo
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +44,7 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
 
     //val leftFans = Relay(PWMOutputs.LEFT_FANS)
 //    val leftFans = MotorController(TalonID(36, "hi there"))
+    val leftFans = PWM(PWMOutputs.LEFT_FANS)
 
     private val i2cPort: I2C.Port = I2C.Port.kMXP
     private val colorSensor = ColorSensorV3(i2cPort)
@@ -65,7 +67,7 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
 
     val pitchAngle: Angle
         //      offset
-        get() = (-270.0 + encoderRawTicks).degrees
+        get() = (-162.0 + encoderRawTicks).degrees
 
     private var pitchSetpoint: Angle = pitchAngle
         set(value) {
@@ -91,9 +93,11 @@ object BalloonGrabber : Subsystem("BalloonGrabber") {
                 leftPitchMotor.setPercentOutput(feedForward + pitchController.update((pitchAngle - pitchSetpoint).asDegrees))
 
                 if (fansOn) {
+                    leftFans.speed = 1.0
 //                    leftFans.setPercentOutput(100.0)
 //                    leftFans.set(Relay.Value.kReverse)
                 } else {
+                    leftFans.speed = 0.0
 //                    leftFans.setPercentOutput(0.0)
 //                    leftFans.set(Relay.Value.kForward)
                 }
