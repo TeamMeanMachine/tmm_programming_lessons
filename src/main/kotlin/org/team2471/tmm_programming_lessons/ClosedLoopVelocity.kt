@@ -24,6 +24,9 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
     val table = NetworkTableInstance.getDefault().getTable(name)
     val testMotorVelocityEntry = table.getEntry("Motor Velocity")
     val testMotorVelocitySetpointEntry = table.getEntry("Motor Velocity Setpoint")
+    val pEntry = table.getEntry("Motor P")
+    val feedForwardEnrty = table.getEntry("Motor Feed Forward")
+    val arbitraryFeedForwardEntry = table.getEntry("Motor Arbitrary Feed Forward")
 
     // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
     val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Motor1"))
@@ -39,11 +42,11 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
         set(value) {
             field = value.coerceIn(0.0, 10000.0)
             // tell the motor to go to velocity ??
-            testMotor.setVelocitySetpoint(field, feedForward(field))
-            println("Feed forward: ${feedForward(field)}")
+            testMotor.setVelocitySetpoint(field, arbitraryFeedForwardEntry.getDouble(3.0))
+            //println("Feed forward: ${feedForward(field)}")
         }
 
-    fun feedForward(rpm: Double) = 1024.0 * rpm / 5925.0
+//    fun feedForward(rpm: Double) = 1024.0 * rpm / 5925.0
 
 //    // declare a pd controller from meanlib to control the motor with software
 //    val velocityController = PDController(0.00001, 0.00001)
@@ -53,15 +56,21 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
     }
 
     init {
+        pEntry.setDouble(0.0000001)
+        feedForwardEnrty.setDouble(0.0)
+        arbitraryFeedForwardEntry.setDouble(0.0)
+
         testMotor.config {
             // the units for the feedback coefficient are (native units) / (ticks)
             feedbackCoefficient = 1.0
             // pid here ??
             pid {
-                p(0.0000001)
+                p(pEntry.getDouble(0.00001))
 //                d(0.00001)
             }
+
         }
+
 
         GlobalScope.launch {
             periodic {
@@ -69,8 +78,10 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
 //                motorPower += velocityController.update(error)
 //                testMotor.setPercentOutput(motorPower)
                 testMotorVelocityEntry.setDouble(motorVelocity)
-                testMotorVelocitySetpointEntry.setDouble(velocitySetpoint)
 
+                velocitySetpoint = testMotorVelocitySetpointEntry.getDouble(0.01)
+                testMotor.setP(pEntry.getDouble(0.00001))
+//                testMotor.setF
             }
         }
     }
@@ -80,7 +91,7 @@ object ClosedLoopVelocity : Subsystem("ClosedLoop") {
 //        motorSpin(positionController.update(error.asDegrees))
 //    }
 
-    fun feedForward(angle: Angle) = 0.0079 * angle.cos()
+//    fun feedForward(angle: Angle) = 0.0079 * angle.cos()
 
     suspend fun positionA() {
         velocitySetpoint = 2000.0
