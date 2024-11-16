@@ -4,7 +4,7 @@ package org.team2471.tmm_programming_lessons
 
 
 object Sparks {
-    const val SIMPLE_MOTOR = 16
+    const val SIMPLE_MOTOR = 17
 }
 
 object AnalogSensors {
