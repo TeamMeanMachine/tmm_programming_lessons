@@ -1,105 +1,141 @@
+/*----------------------------------------------------------------------------*/ /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */ /* Open Source Software - may be modified and shared by FRC teams. The code   */ /* must be accompanied by the FIRST BSD license file in the root directory of */ /* the project.                                                               */ /*----------------------------------------------------------------------------*/
 package org.team2471.tmm_programming_lessons
 
-import edu.wpi.first.networktables.NetworkTableInstance
+import com.revrobotics.*
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import org.team2471.frc.lib.actuators.MotorController
-import org.team2471.frc.lib.actuators.SparkMaxID
-import org.team2471.frc.lib.control.PDController
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
-import org.team2471.frc.lib.math.cubicMap
-import org.team2471.frc.lib.units.Angle
-import org.team2471.frc.lib.units.degrees
-import kotlin.math.absoluteValue
 
-
-// setRawOffset( Angle ) - make a button which can zero the little white arm
-// software limits low and high
-// motion profiling - CubicMap - look at balloon grabber in this project - use a new function animateToAngle() and use it on the PositionA and B functions
-// arbitrary feed forward - coming soon
-
-object ClosedLoopVelocity : Subsystem("ClosedLoop") {
-    // make a table and an entry for motor angle
-    val table = NetworkTableInstance.getDefault().getTable(name)
-    val testMotorVelocityEntry = table.getEntry("Motor Velocity")
-    val testMotorVelocitySetpointEntry = table.getEntry("Motor Velocity Setpoint")
-    val pEntry = table.getEntry("Motor P")
-    val feedForwardEnrty = table.getEntry("Motor Feed Forward")
-    val arbitraryFeedForwardEntry = table.getEntry("Motor Arbitrary Feed Forward")
-
-    // declare a motor here, and use a SparkMaxID and id 16 from the robot map (SIMPLE_MOTOR)
-    val testMotor = MotorController(SparkMaxID(Sparks.SIMPLE_MOTOR, "Motor1"))
-
-    // declare a val to return the motor's encoder position.  Use a get() function
-    val motorVelocity: Double
-        get() = testMotor.velocity
-
-    var motorPower: Double = 0.0
-
-    // declare a var to contain the setpoint for the position pid
-    var velocitySetpoint: Double = motorVelocity
-        set(value) {
-            field = value.coerceIn(0.0, 10000.0)
-            // tell the motor to go to velocity ??
-            testMotor.setVelocitySetpoint(field, arbitraryFeedForwardEntry.getDouble(3.0))
-            //println("Feed forward: ${feedForward(field)}")
-        }
-
-//    fun feedForward(rpm: Double) = 1024.0 * rpm / 5925.0
-
-//    // declare a pd controller from meanlib to control the motor with software
-//    val velocityController = PDController(0.00001, 0.00001)
-
-    override fun postEnable() {
-        motorPower = 0.0
-    }
+/**
+ * This is a demo program showing the use of the RobotDrive class, specifically
+ * it contains the code necessary to operate a robot with tank drive.
+ */
+object ClosedLoopVelocity : Subsystem("ClosedLoopVelocity") {
+    private var m_motor: CANSparkMax? = null
+    private var m_encoder: RelativeEncoder? = null
+    var kP: Double = 0.0
+    var kI: Double = 0.0
+    var kD: Double = 0.0
+    var kIz: Double = 0.0
+    var kFF: Double = 0.0
+    var kMaxOutput: Double = 0.0
+    var kMinOutput: Double = 0.0
+    var maxRPM: Double = 0.0
+    var m_pidController: SparkPIDController
+    var setPointPercentage = 0.0
 
     init {
-        pEntry.setDouble(0.0000001)
-        feedForwardEnrty.setDouble(0.0)
-        arbitraryFeedForwardEntry.setDouble(0.0)
 
-        testMotor.config {
-            // the units for the feedback coefficient are (native units) / (ticks)
-            feedbackCoefficient = 1.0
-            // pid here ??
-            pid {
-                p(pEntry.getDouble(0.00001))
-//                d(0.00001)
-            }
+        // initialize motor
+        m_motor = CANSparkMax(Sparks.SIMPLE_MOTOR, CANSparkLowLevel.MotorType.kBrushless)
 
-        }
+        /**
+         * The RestoreFactoryDefaults method can be used to reset the configuration parameters
+         * in the SPARK MAX to their factory default state. If no argument is passed, these
+         * parameters will not persist between power cycles
+         */
+        m_motor!!.restoreFactoryDefaults()
+
+        /**
+         * In order to use PID functionality for a controller, a SparkPIDController object
+         * is constructed by calling the getPIDController() method on an existing
+         * CANSparkMax object
+         */
+        m_pidController = m_motor!!.pidController
+
+        // Encoder object created to display position values
+        m_encoder = m_motor!!.encoder
+
+        // PID coefficients
+        kP = 6e-5
+        kI = 0.0
+        kD = 0.0
+        kIz = 0.0
+        kFF = 0.000015
+        kMaxOutput = 1.0
+        kMinOutput = -1.0
+        maxRPM = 5700.0
+
+        // set PID coefficients
+        m_pidController.setP(kP)
+        m_pidController.setI(kI)
+        m_pidController.setD(kD)
+        m_pidController.setIZone(kIz)
+        m_pidController.setFF(kFF)
+        m_pidController.setOutputRange(kMinOutput, kMaxOutput)
+
+        // display PID coefficients on SmartDashboard
+        SmartDashboard.putNumber("P Gain", kP)
+        SmartDashboard.putNumber("I Gain", kI)
+        SmartDashboard.putNumber("D Gain", kD)
+        SmartDashboard.putNumber("I Zone", kIz)
+        SmartDashboard.putNumber("Feed Forward", kFF)
+        SmartDashboard.putNumber("Max Output", kMaxOutput)
+        SmartDashboard.putNumber("Min Output", kMinOutput)
 
 
         GlobalScope.launch {
             periodic {
-//                val error = velocitySetpoint - motorVelocity
-//                motorPower += velocityController.update(error)
-//                testMotor.setPercentOutput(motorPower)
-                testMotorVelocityEntry.setDouble(motorVelocity)
 
-                velocitySetpoint = testMotorVelocitySetpointEntry.getDouble(0.01)
-                testMotor.setP(pEntry.getDouble(0.00001))
-//                testMotor.setF
+                // read PID coefficients from SmartDashboard
+                val p = SmartDashboard.getNumber("P Gain", 0.0)
+                val i = SmartDashboard.getNumber("I Gain", 0.0)
+                val d = SmartDashboard.getNumber("D Gain", 0.0)
+                val iz = SmartDashboard.getNumber("I Zone", 0.0)
+                val ff = SmartDashboard.getNumber("Feed Forward", 0.0)
+                val max = SmartDashboard.getNumber("Max Output", 0.0)
+                val min = SmartDashboard.getNumber("Min Output", 0.0)
+
+                // if PID coefficients on SmartDashboard have changed, write new values to controller
+                if ((p != kP)) {
+                    m_pidController!!.setP(p)
+                    kP = p
+                }
+                if ((i != kI)) {
+                    m_pidController!!.setI(i)
+                    kI = i
+                }
+                if ((d != kD)) {
+                    m_pidController!!.setD(d)
+                    kD = d
+                }
+                if ((iz != kIz)) {
+                    m_pidController!!.setIZone(iz)
+                    kIz = iz
+                }
+                if ((ff != kFF)) {
+                    m_pidController!!.setFF(ff)
+                    kFF = ff
+                }
+                if ((max != kMaxOutput) || (min != kMinOutput)) {
+                    m_pidController!!.setOutputRange(min, max)
+                    kMinOutput = min
+                    kMaxOutput = max
+                }
+
+                /**
+                 * PIDController objects are commanded to a set point using the
+                 * SetReference() method.
+                 *
+                 * The first parameter is the value of the set point, whose units vary
+                 * depending on the control type set in the second parameter.
+                 *
+                 * The second parameter is the control type can be set to one of four
+                 * parameters:
+                 * com.revrobotics.CANSparkMax.ControlType.kDutyCycle
+                 * com.revrobotics.CANSparkMax.ControlType.kPosition
+                 * com.revrobotics.CANSparkMax.ControlType.kVelocity
+                 * com.revrobotics.CANSparkMax.ControlType.kVoltage
+                 */
+                setPointPercentage = OI.driveRightTrigger
+                m_pidController.setReference(setPointPercentage * maxRPM, CANSparkBase.ControlType.kVelocity)
+
+                SmartDashboard.putNumber("SetPoint", setPointPercentage)
+                SmartDashboard.putNumber("ProcessVariable", m_encoder!!.velocity)
             }
+
         }
-    }
-
-//    override suspend fun default() {
-//        val error = angleSetpoint - motorAngle
-//        motorSpin(positionController.update(error.asDegrees))
-//    }
-
-//    fun feedForward(angle: Angle) = 0.0079 * angle.cos()
-
-    suspend fun positionA() {
-        velocitySetpoint = 2000.0
-        println("2000 rpm")
-    }
-
-    suspend fun positionB() {
-        velocitySetpoint = 4000.0
-        println("4000 rpm")
     }
 }

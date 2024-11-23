@@ -79,8 +79,8 @@ object OI : Subsystem("OI") {
         }
 
         //driverController::leftThumbstickButton.whenTrue { ClosedLoopVelocity.zeroTestMotor() }
-        driverController::a.whenTrue { ClosedLoopVelocity.positionA() }
-        driverController::b.whenTrue { ClosedLoopVelocity.positionB() }
+//        driverController::a.whenTrue { ClosedLoopVelocity.positionA() }
+//        driverController::b.whenTrue { ClosedLoopVelocity.positionB() }
         //driverController::rightThumbstickButton.whenTrue { autoFeedForwardTest(ClosedLoopPosition.testMotor, {ClosedLoopPosition.motorAngle}, ClosedLoopPosition.angleList) }
         //driverController::rightThumbstickButton.whenTrue { ClosedLoopPosition.testFeedForward(0.001) }
 
