@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.team2471.frc.lib.coroutines.periodic
 import org.team2471.frc.lib.framework.Subsystem
+import kotlin.math.PI
 
 /**
  * This is a demo program showing the use of the RobotDrive class, specifically
@@ -130,9 +131,9 @@ object ClosedLoopVelocity : Subsystem("ClosedLoopVelocity") {
                  * com.revrobotics.CANSparkMax.ControlType.kVoltage
                  */
                 setPointPercentage = OI.driveRightTrigger
-                m_pidController.setReference(setPointPercentage * maxRPM, CANSparkBase.ControlType.kVelocity)
+                m_pidController.setReference(setPointPercentage * maxRPM * PI, CANSparkBase.ControlType.kVelocity)
 
-                SmartDashboard.putNumber("SetPoint", setPointPercentage)
+                SmartDashboard.putNumber("SetPoint", setPointPercentage * maxRPM)
                 SmartDashboard.putNumber("ProcessVariable", m_encoder!!.velocity)
             }
 
