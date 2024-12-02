@@ -26,7 +26,6 @@ import org.team2471.frc.lib.units.degrees
 object ClosedLoopVelocity : Subsystem("ClosedLoopVelocity") {
     private val m_fx = TalonFX(1, "canivore")
     private val m_mmReq = MotionMagicVoltage(0.0)
-    private val m_joystick = XboxController(0)
 
     private var m_printCount = 0
 
@@ -39,10 +38,10 @@ object ClosedLoopVelocity : Subsystem("ClosedLoopVelocity") {
 
         /* Configure Motion Magic */
         val mm = cfg.MotionMagic
-        mm.withMotionMagicCruiseVelocity(Units.RotationsPerSecond.of(5.0)) // 5 (mechanism) rotations per second cruise
-            .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(10)) // Take approximately 0.5 seconds to reach max vel
+        mm.withMotionMagicCruiseVelocity(10.0) // 5 (mechanism) rotations per second cruise
+            .withMotionMagicAcceleration(1.0) // Take approximately 0.5 seconds to reach max vel
             // Take approximately 0.1 seconds to reach max accel
-            .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Units.Second).of(100))
+//            .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Units.Second).of(100))
 
         val slot0 = cfg.Slot0
         slot0.kS = 0.25 // Add 0.25 V output to overcome static friction
@@ -71,12 +70,12 @@ object ClosedLoopVelocity : Subsystem("ClosedLoopVelocity") {
                     println()
                 }
                 /* Deadband the joystick */
-                var leftY = m_joystick.leftY
+                var leftY = OI.driverController.leftThumbstickY
                 if (abs(leftY) < 0.1) leftY = 0.0
 
                 m_fx.setControl(m_mmReq.withPosition(leftY * 10).withSlot(0))
-                if (m_joystick.bButton) {
-                    m_fx.setPosition(Units.Rotations.of(1.0))
+                if (OI.driverController.b) {
+                    m_fx.setPosition(90.0)
                 }
 
             }
