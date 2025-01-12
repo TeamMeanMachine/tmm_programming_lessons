@@ -76,6 +76,8 @@ object Shooter: Subsystem("Shooter") {
             periodic {
                 motorRpmBottomEntry.setDouble(motorRpmBottom)
                 motorRpmTopEntry.setDouble(motorRpmTop)
+
+                setPower(OI.driveRightTrigger)
             }
         }
     }
