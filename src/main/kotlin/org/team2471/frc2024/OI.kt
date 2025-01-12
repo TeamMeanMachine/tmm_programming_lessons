@@ -71,6 +71,12 @@ object OI : Subsystem("OI") {
         }
 
         // TMM LESSON COMMENT: add two mappings from a button to rotating and from a second button to stop the motor
+        driverController::b.whenTrue {
+            Shooter.setPower(0.5)
+        }
+        driverController::a.whenTrue {
+            Shooter.setPower(0.0)
+        }
 
 
         GlobalScope.launch {

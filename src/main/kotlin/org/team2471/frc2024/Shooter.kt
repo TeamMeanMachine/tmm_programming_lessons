@@ -94,6 +94,8 @@ object Shooter: Subsystem("Shooter") {
 
     fun setPower(power: Double) {
         // TMM LESSON COMMENT: call setPercentOutput here for both the top and bottom motors
+        shooterMotorTop.setPercentOutput(power)
+        shooterMotorBottom.setPercentOutput(power)
     }
 
     // TMM LESSON COMMENT: also go to OI to map this to buttons
