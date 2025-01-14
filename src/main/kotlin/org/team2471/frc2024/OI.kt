@@ -72,6 +72,14 @@ object OI : Subsystem("OI") {
 
         // TMM LESSON COMMENT: add two mappings from a button to rotating and from a second button to stop the motor
 
+        driverController::a .whenTrue {
+            Shooter.positionA()
+        }
+
+        driverController::b .whenTrue {
+            Shooter.positionB()
+        }
+
         GlobalScope.launch {
             periodic {
                 // Driver Rumble
