@@ -24,6 +24,13 @@ import org.team2471.frc2024.Pivot.pivotEncoderAngle
 import org.team2471.frc2024.Pivot.pivotMotor
 import javax.swing.text.Position
 
+// TMM LESSON COMMENT:  problem 2 part 2 - control the motors position just like part 1, but use the motor controller instead
+
+// steps:
+// remove the PDController vars
+// in the setpoint set() functions call each motor's  setPositionSetpoint() functions
+
+
 object Shooter: Subsystem("Shooter") {
 
     // this creates a network table for the Shooter subsystem
